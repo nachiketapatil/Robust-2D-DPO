@@ -72,3 +72,16 @@ This work explores:
   python 2ddpo_tp.py
   ```
 - Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/2d-noisy-dpo_TP?nw=nwuserritik007)
+- ## 4. 2D-DPO (Evaluation on Noise Dataset Only)
+- **Training Dataset**: [HelpSteer_2D_SegScores.csv](https://github.com/nachiketapatil/Robust-2D-DPO/blob/main/datasets/HelpSteer_2D_SegScores.csv)
+- **Evaluation Dataset**: [Noisy_2D_DPO.csv](https://github.com/nachiketapatil/Robust-2D-DPO/blob/main/datasets/Noisy_2D_DPO.csv)
+	- **Noise Injection**: Uniform noise added to `chosen_segment_scores` and `rejected_segment_scores`
+- **Model & Training Setup**:
+	- Identical architecture and hyperparameters as the clean 2D-DPO training
+	- Used the same fine-tuned SFT model as initialization
+	- Used to evaluate the robustness of 2D-DPO to scoring noise
+- **Training Command**:
+  ```python
+  python 2ddpo_tp.py
+  ```
+- Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/2d-dpo_pure_test_noisy_FINAL?nw=nwuserritik007)
