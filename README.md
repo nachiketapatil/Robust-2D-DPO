@@ -2,12 +2,8 @@
 Direct Preference Optimization (DPO) aligns LLMs with human preferences but lacks granular scoring. 2D-DPO improves this with a two-dimensional scoring system. This work explores 2D-DPO’s advantages, addresses its sensitivity to label noise, and proposes a robust version, backed by proof and empirical results, with future research directions.
 
 1) SFT Training:
-- **Dataset**:
-  ```
-  Noisy_2D-DPO.csv
-  ```
-  (6,400 rows)  
-  **Format**: _, instruction, chosen, rejected, chosen_segment_scores, rejected_segment_scores  
+- **Dataset**:```Noisy_2D-DPO.csv ``` (6,400 rows)  
+- **Format**: _, instruction, chosen, rejected, chosen_segment_scores, rejected_segment_scores  
 - **Training**:
 - **Model**: Pythia 6.9B
 - **Loss**: Supervised Fine-Tuning Loss
