@@ -1,0 +1,19 @@
+# do 2D-DPO preference-based training
+name: 2d-dpo
+
+# the temperature parameter for 2D-DPO; lower values mean we care less about
+#   the reference model
+beta: 0.1  # Set an appropriate value, typical range is 0.1 to 0.5
+
+# Whether to ignore the reference model
+reference_free: false
+
+# Use segment rewards from dataset or use default weights (1.0 for all segments)
+use_segment_rewards: true
+
+# Where to find segment rewards if not explicitly provided in the dataset
+# Can be "equal_weights", "from_file", or "from_dataset"
+#segment_rewards_source: "from_dataset"
+
+# Path to segment rewards file if using from_file
+#segment_rewards_file: "/path/to/your/HelpSteer_2D_SegScores.csv"
