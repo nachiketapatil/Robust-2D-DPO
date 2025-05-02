@@ -29,7 +29,8 @@ This work explores:
   exp_name=helpsteer2d-nosiy_sft_pythia69 gradient_accumulation_steps=2 batch_size=64 \
   eval_batch_size=32 trainer=FSDPTrainer sample_during_eval=false model.fsdp_policy_mp=bfloat16
   ```
--
+- Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/nosiy_2d-dpo?nw=nwuserritik007)
+  
 - ## 2. 2D-DPO (Without Noise)
 - **Dataset**: Original HelpSteer 2D dataset (clean)
 - **Model**: Fine-tuned Pythia 6.9B from SFT phase
