@@ -10,7 +10,7 @@ This work explores:
   
   ---
 - ## 1. Supervised Fine-Tuning (SFT)
-- **Dataset**: `Noisy_2D-DPO.csv` (6,400 rows)
+- **Dataset**: [HelpSteer_2D_SegScores.csv](https://github.com/nachiketapatil/Robust-2D-DPO/blob/main/datasets/HelpSteer_2D_SegScores.csv) (6,400 rows)
 - **Format**: `_`, `instruction`, `chosen`, `rejected`, `chosen_segment_scores`, `rejected_segment_scores`
 - **Model**: Pythia 6.9B
 - **Loss**: Standard Supervised Fine-Tuning Loss
@@ -30,9 +30,8 @@ This work explores:
   eval_batch_size=32 trainer=FSDPTrainer sample_during_eval=false model.fsdp_policy_mp=bfloat16
   ```
 - Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/nosiy_2d-dpo?nw=nwuserritik007)
-  
 - ## 2. 2D-DPO (Without Noise)
-- **Dataset**: Original HelpSteer 2D dataset (clean)
+- **Dataset**: [HelpSteer_2D_SegScores.csv](https://github.com/nachiketapatil/Robust-2D-DPO/blob/main/datasets/HelpSteer_2D_SegScores.csv)
 - **Model**: Fine-tuned Pythia 6.9B from SFT phase
 - **Training Hyperparameters**:
 	- BETA: 0.1
@@ -62,7 +61,7 @@ This work explores:
   ```
 - Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/2d-pure-dpo_FSDP?nw=nwuserritik007)
 - ## 3. 2D-DPO (With Noise)
-- **Dataset**: Noisy HelpSteer 2D dataset
+- **Dataset**: [Noisy_2D_DPO.csv](https://github.com/nachiketapatil/Robust-2D-DPO/blob/main/datasets/Noisy_2D_DPO.csv)
 	- **Noise Injection**: Uniform noise added to `chosen_segment_scores` and `rejected_segment_scores`
 - **Model & Training Setup**:
 	- Identical architecture and hyperparameters as the clean 2D-DPO training
