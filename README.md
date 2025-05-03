@@ -14,7 +14,7 @@ This work explores:
 - **Format**: `_`, `instruction`, `chosen`, `rejected`, `chosen_segment_scores`, `rejected_segment_scores`
 - **Model**: Pythia 6.9B
 - **Loss**: Standard Supervised Fine-Tuning Loss
-- **Hardware**: 3× H100 GPUs (80 GB VRAM each)
+- **Hardware**: 3 × H100 GPUs (80 GB VRAM each)
 - **Training Time**: ~20 minutes  
   
   **Training Hyperparameters**:
