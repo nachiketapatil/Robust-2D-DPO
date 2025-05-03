@@ -29,7 +29,7 @@ This work explores:
   exp_name=helpsteer2d-nosiy_sft_pythia69 gradient_accumulation_steps=2 batch_size=64 \
   eval_batch_size=32 trainer=FSDPTrainer sample_during_eval=false model.fsdp_policy_mp=bfloat16
   ```
-- Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/nosiy_2d-dpo?nw=nwuserritik007)
+- Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/dpo_helpsteer2D?nw=nwuserritik007)
 - ## 2. 2D-DPO (Without Noise)
 - **Dataset**: [HelpSteer_2D_SegScores.csv](https://github.com/nachiketapatil/Robust-2D-DPO/blob/main/datasets/HelpSteer_2D_SegScores.csv)
 - **Model**: Fine-tuned Pythia 6.9B from SFT phase
@@ -59,7 +59,7 @@ This work explores:
   ```python
   python 2ddpo_tp.py
   ```
-- Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/2d-pure-dpo_FSDP?nw=nwuserritik007)
+- Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/2d-dpo_both_pure_FINAL?nw=nwuserritik007)
 - ## 3. 2D-DPO (With Noise)
 - **Dataset**: [Noisy_2D_DPO.csv](https://github.com/nachiketapatil/Robust-2D-DPO/blob/main/datasets/Noisy_2D_DPO.csv)
 	- **Noise Injection**: Uniform noise added to `chosen_segment_scores` and `rejected_segment_scores`
@@ -71,7 +71,7 @@ This work explores:
   ```python
   python 2ddpo_tp.py
   ```
-- Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/2d-noisy-dpo_TP?nw=nwuserritik007)
+- Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/2d-dpo_pure_test_noisy_FINAL?nw=nwuserritik007)
 - ## 4. 2D-DPO (Evaluation on Noise Dataset Only)
 - **Training Dataset**: [HelpSteer_2D_SegScores.csv](https://github.com/nachiketapatil/Robust-2D-DPO/blob/main/datasets/HelpSteer_2D_SegScores.csv)
 - **Evaluation Dataset**: [Noisy_2D_DPO.csv](https://github.com/nachiketapatil/Robust-2D-DPO/blob/main/datasets/Noisy_2D_DPO.csv)
@@ -84,4 +84,4 @@ This work explores:
   ```python
   python 2ddpo_tp.py
   ```
-- Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/2d-dpo_pure_test_noisy_FINAL?nw=nwuserritik007)
+- Compare logs at: [Weights & Biases](https://wandb.ai/ritik007/2d-dpo_both_noisy_FINAL?nw=nwuserritik007)
