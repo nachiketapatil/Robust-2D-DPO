@@ -55,23 +55,15 @@ MODEL = 'EleutherAI/pythia-6.9b'
 MODEL_POLICY_DTYPE = 'float32'
 MODEL_REFERENCE_DTYPE = 'float16'
 #MODEL_ARCHIVE = '/nfs/ritik.ritik/OML/direct-preference-optimization/.cache/ritik.ritik/anthropic_dpo_pythia69_2025-04-17_00-42-24_036276/LATEST/policy.pt'#None #Path to policy.pt after SFT
-MODEL_ARCHIVE = '/nfs/ritik.ritik/Nosiy_2D-DPO/.cache/ritik.ritik/helpsteer2d-noisy_sft_pythia69_2025-05-02_15-54-57_777221/LATEST/policy.pt'
+MODEL_ARCHIVE = '/nfs/ritik.ritik/Nosiy_2D-DPO/.cache/ritik.ritik/helpsteer2d-nosiy_sft_pythia69_2025-05-02_15-54-57_777221/LATEST/policy.pt'
 MODEL_BLOCK_NAME = 'GPTNeoXLayer'
 OPTIMIZER = "RMSprop" # or "AdamW"
 LR = 5e-7
-EVAL_EVERY = 1000 #20000 #Change this in main() as well
-BATCH_SIZE = 16 #16#64 #Default 4
-
-if EVAL_EVERY % BATCH_SIZE != 0:
-        print('WARNING: eval_every must be divisible by batch_size')
-        print('Setting eval_every to', EVAL_EVERY - EVAL_EVERY % BATCH_SIZE)
-        EVAL_EVERY = EVAL_EVERY - EVAL_EVERY % BATCH_SIZE
-
-
+EVAL_EVERY = 500 #20000 #Change this in main() as well
 DO_FIRST_EVAL = True
 SAMPLE_DURING_EVAL = False #Default True
 SEED = 0
-
+BATCH_SIZE = 16 #16#64 #Default 4
 EVAL_BATCH_SIZE = 8 #8#32 #Default 16
 MAX_LENGTH = 512
 MAX_PROMPT_LENGTH = 256
@@ -80,14 +72,14 @@ N_EVAL_MODEL_SAMPLES = 16
 
 WANDB_ENABLED = True
 WANDB_ENTITY = None
-WANDB_PROJECT = "2d-dpo_both_pure_FINAL"
+WANDB_PROJECT = "2d-noisy-dpo_TP"
 
 DEBUG = False
-RUN_DIR = '/nfs/ritik.ritik/Nosiy_2D-DPO/2ddpo_both_pure_checkpoints_TP_FINAL'
+RUN_DIR = '/nfs/ritik.ritik/Nosiy_2D-DPO/2ddpo_noisy_checkpoints_TP'
 GRADIENT_ACCUMULATION_STEPS = 2#default 1
 MINIMUM_LOG_INTERVAL_SECS = 1.0
 MAX_GRAD_NORM = 10.0
-EXP_NAME = '2DDPO_both_pure_pythia69_FINAL'
+EXP_NAME = '2DDPO_noisy_pythia69'
 LOCAL_DIR = ['.cache']
 
 
@@ -168,41 +160,24 @@ def split_to_sentences(total_text):
     
     return sentences, split_points
 
-dataset = pd.read_csv("/nfs/ritik.ritik/OML/2D-DPO/HelpSteer_2D_SegScores.csv")# "/nfs/ritik.ritik/Nosiy_2D-DPO/datasets/Noisy_2D_DPO.csv")     # For noisy
+dataset = pd.read_csv("/nfs/ritik.ritik/Nosiy_2D-DPO/datasets/Noisy_2D_DPO.csv") #"/nfs/ritik.ritik/OML/2D-DPO/HelpSteer_2D_SegScores.csv")    # For Pure Change to noisy later
 dataset.drop(columns=['Unnamed: 0'], inplace=True)
 
 d = defaultdict(list)
 d["prompt"] = list(dataset["instruction"])
 d["chosen"] = list(dataset["chosen"])
 d["rejected"] = list(dataset["rejected"])
-d["chosen_segment_scores"] = [eval(i) for i in dataset["chosen segment scores"]]                # _ to remember
-d["rejected_segment_scores"] = [eval(i) for i in dataset["rejected segment scores"]]               # _ to remember
+d["chosen_segment_scores"] = [eval(i) for i in dataset["chosen_segment_scores"]]                # _ to remember
+d["rejected_segment_scores"] = [eval(i) for i in dataset["rejected_segment_scores"]]               # _ to remember
 
 
 final_dataset = pd.DataFrame(d)
 
-final_dataset_train, final_dataset_eval = train_test_split(final_dataset, train_size=0.8, random_state=SEED)
+final_dataset_train, final_dataset_eval = train_test_split(final_dataset, train_size=0.7, random_state=SEED)
 # Convert dataframes to list of dictionaries
 final_dataset_train = final_dataset_train.to_dict(orient='records')
 final_dataset_eval = final_dataset_eval.to_dict(orient='records')
-
-# dataset2 = pd.read_csv("/nfs/ritik.ritik/OML/2D-DPO/HelpSteer_2D_SegScores.csv")    # For Pure
-# dataset2.drop(columns=['Unnamed: 0'], inplace=True)
-
-# d2 = defaultdict(list)
-# d2["prompt"] = list(dataset2["instruction"])
-# d2["chosen"] = list(dataset2["chosen"])
-# d2["rejected"] = list(dataset2["rejected"])
-# d2["chosen_segment_scores"] = [eval(i) for i in dataset2["chosen segment scores"]]
-# d2["rejected_segment_scores"] = [eval(i) for i in dataset2["rejected segment scores"]]             
-
-# final_dataset2 = pd.DataFrame(d2)
-
-# final_dataset_train2, final_dataset_eval2 = train_test_split(final_dataset2, train_size=0.8, random_state=SEED)
-# Convert dataframes to list of dictionaries
-#final_dataset_train2 = final_dataset_train2.to_dict(orient='records')
-#final_dataset_eval2 = final_dataset_eval2.to_dict(orient='records')
-#print(final_dataset_train[0])
+print(final_dataset_train[0])
 #assert dataset.shape == final_dataset.shape
 
 # for i,prompt in enumerate(final_dataset["chosen"]):
@@ -407,14 +382,11 @@ def preference_loss(policy_chosen_logps: torch.FloatTensor,
     # print(reference_chosen_logps.shape) #[32, 49]
     # print(reference_rejected_logps.shape) #[32, 37]
     # print(len(reward_chosen)) #[32]
-    # print(len(reward_chosen[0]))#[1]
-    # print(len(reward_rejected))#[32]
-    # print(len(reward_rejected[0]))#[1]
+    # print(len(reward_rejected[0])) 
 
     # Calculate 2D DPO loss
     losses = torch.zeros_like(policy_chosen_logps[:, 0])  # Initialize with zeros for each batch item
-    chosen_rewards = torch.zeros_like(policy_chosen_logps[:, 0])
-    rejected_rewards = torch.zeros_like(policy_chosen_logps[:, 0])
+    
     # Process each batch item
     for batch_idx in range(policy_chosen_logps.shape[0]):
         # Get the number of segments for current batch example
@@ -425,10 +397,8 @@ def preference_loss(policy_chosen_logps: torch.FloatTensor,
         n = min(chosen_num_segments, rejected_num_segments)
         
         # Get reward weights for current batch item, ensuring we have something to work with
-        #batch_chosen_rewards = reward_chosen[batch_idx][:chosen_num_segments] #if batch_idx < len(reward_chosen) else [1.0] * chosen_num_segments
-        #batch_rejected_rewards = reward_rejected[batch_idx][:rejected_num_segments] #if batch_idx < len(reward_rejected) else [1.0] * rejected_num_segments
-        batch_chosen_rewards = reward_chosen[batch_idx][:]
-        batch_rejected_rewards = reward_rejected[batch_idx][:]
+        batch_chosen_rewards = reward_chosen[batch_idx][:chosen_num_segments] #if batch_idx < len(reward_chosen) else [1.0] * chosen_num_segments
+        batch_rejected_rewards = reward_rejected[batch_idx][:rejected_num_segments] #if batch_idx < len(reward_rejected) else [1.0] * rejected_num_segments
         
         # Convert to tensors for easier sorting
         batch_chosen_rewards = torch.tensor(batch_chosen_rewards)
@@ -443,10 +413,6 @@ def preference_loss(policy_chosen_logps: torch.FloatTensor,
         
         # Calculate batch loss using selected segments
         batch_loss = 0
-
-        chosen_rewards_score = 0
-        rejected_rewards_score = 0
-
         n = min(n, min(len(chosen_indices), len(rejected_indices))) ##### ADDED if [4.0] and [2.3] are only rewards_chosen and rewards_rejected
         for i in range(n):
             chosen_idx = chosen_indices[i]
@@ -468,21 +434,14 @@ def preference_loss(policy_chosen_logps: torch.FloatTensor,
             
             # Add log-sigmoid of the segment logit to the batch loss
             batch_loss += F.logsigmoid(seg_logit)
-            chosen_rewards_score += chosen_reward_weight*(policy_chosen_seg_logp - reference_chosen_seg_logp).detach()
-            rejected_rewards_score += rejected_reward_weight*(policy_rejected_seg_logp - reference_rejected_seg_logp).detach()
         
         # Store the negative loss (since we're minimizing)
         losses[batch_idx] = -batch_loss
-
-        chosen_rewards_score *= beta
-        rejected_rewards_score *= beta
-        chosen_rewards[batch_idx] = chosen_rewards_score
-        rejected_rewards[batch_idx] = rejected_rewards_score
     
     # Calculate rewards for monitoring (using full sequence for compatibility)
-    # chosen_rewards = beta * (policy_chosen_logps.sum(dim=1) - reference_chosen_logps.sum(dim=1)).detach()
-    # rejected_rewards = beta * (policy_rejected_logps.sum(dim=1) - reference_rejected_logps.sum(dim=1)).detach()
-
+    chosen_rewards = beta * (policy_chosen_logps.sum(dim=1) - reference_chosen_logps.sum(dim=1)).detach()
+    rejected_rewards = beta * (policy_rejected_logps.sum(dim=1) - reference_rejected_logps.sum(dim=1)).detach()
+    
     return losses, chosen_rewards, rejected_rewards
 
 
@@ -593,9 +552,9 @@ class BasicTrainer(object):
 
         tokenizer = self.tokenizer
         
-        self.train_iterator = get_batch_iterator(final_dataset_train, tokenizer, BATCH_SIZE, MAX_LENGTH, MAX_PROMPT_LENGTH)   #Pure
+        self.train_iterator = get_batch_iterator(final_dataset_train, tokenizer, BATCH_SIZE, MAX_LENGTH, MAX_PROMPT_LENGTH)
         rank0_print("Train iterator created successfully.")
-        self.eval_iterator = get_batch_iterator(final_dataset_eval, tokenizer, EVAL_BATCH_SIZE, MAX_LENGTH, MAX_PROMPT_LENGTH) #Noisy
+        self.eval_iterator = get_batch_iterator(final_dataset_eval, tokenizer, EVAL_BATCH_SIZE, MAX_LENGTH, MAX_PROMPT_LENGTH) #implemented 
         self.eval_batches = list(self.eval_iterator)
         rank0_print(f'Loaded {len(self.eval_batches)} eval batches of size {EVAL_BATCH_SIZE}')
 
@@ -1003,12 +962,12 @@ def worker_main(rank: int, world_size: int, policy: nn.Module, reference_model: 
     trainer.save()
 
 def main():
-    # EVAL_EVERY = 500
-    # # FSDP_PORT = get_open_port()
-    # if EVAL_EVERY % BATCH_SIZE != 0:
-    #     print('WARNING: eval_every must be divisible by batch_size')
-    #     print('Setting eval_every to', EVAL_EVERY - EVAL_EVERY % BATCH_SIZE)
-    #     EVAL_EVERY = EVAL_EVERY - EVAL_EVERY % BATCH_SIZE
+    EVAL_EVERY = 500
+    # FSDP_PORT = get_open_port()
+    if EVAL_EVERY % BATCH_SIZE != 0:
+        print('WARNING: eval_every must be divisible by batch_size')
+        print('Setting eval_every to', EVAL_EVERY - EVAL_EVERY % BATCH_SIZE)
+        EVAL_EVERY = EVAL_EVERY - EVAL_EVERY % BATCH_SIZE
 
     #LOCAL_RUN_DIR = get_local_run_dir(EXP_NAME, LOCAL_DIR) #Possible bug here
 
